@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://DigitalEnclave.com
+
+# Sitemaps
+Sitemap: https://DigitalEnclave.com/sitemap.xml
