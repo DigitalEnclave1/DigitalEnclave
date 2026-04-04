@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import {
@@ -15,6 +15,7 @@ import {
   FaWhatsapp,
   FaChevronDown,
 } from "react-icons/fa";
+import { toast, Toaster } from 'react-hot-toast';
 
 // Updated color theme to use purple-600 consistently
 const colors = {
@@ -29,9 +30,79 @@ const colors = {
 const SocialMediaPackagePage = () => {
   // State for FAQ accordion
   const [openFaq, setOpenFaq] = React.useState<number | null>(null);
+  
+  // State for custom package form
+  const [formData, setFormData] = useState({
+    businessName: "",
+    email: "",
+    phone: "",
+    businessCategory: "",
+    platformsOfInterest: "",
+    monthlyBudget: "",
+    additionalRequirements: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Validate required fields
+    if (!formData.businessName || !formData.email || !formData.phone) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const loadingToast = toast.loading('Sending your inquiry...');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.businessName,
+          email: formData.email,
+          phone: formData.phone,
+          subject: `Social Media Package Inquiry - ${formData.businessCategory || 'General'}`,
+          message: `Business Name: ${formData.businessName}\n\nPlatforms of Interest: ${formData.platformsOfInterest || 'Not specified'}\n\nMonthly Budget: ${formData.monthlyBudget || 'Not specified'}\n\nAdditional Requirements:\n${formData.additionalRequirements || 'None'}`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Inquiry sent successfully!', { id: loadingToast });
+        setFormData({
+          businessName: "",
+          email: "",
+          phone: "",
+          businessCategory: "",
+          platformsOfInterest: "",
+          monthlyBudget: "",
+          additionalRequirements: "",
+        });
+      } else {
+        toast.error(`Failed to send inquiry: ${data.message}`, { id: loadingToast });
+      }
+    } catch (error) {
+      toast.error('An error occurred. Please try again later.', { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const faqItems = [
@@ -85,7 +156,7 @@ const SocialMediaPackagePage = () => {
             <p className="mb-4 text-gray-600">Establish your social media presence with essential management.</p>
             <div className="flex items-baseline mt-4 mb-2">
                   <span className="text-lg text-gray-500">$</span>
-                  <span className="text-4xl font-extrabold text-purple-700">99</span>
+                  <span className="text-4xl font-extrabold text-purple-700">4999</span>
                   <span className="ml-1 text-xl text-gray-500">/month</span>
                 </div>
             
@@ -117,7 +188,7 @@ const SocialMediaPackagePage = () => {
             <p className="mb-4 text-gray-600">Enhance your social media presence and engagement.</p>
             <div className="flex items-baseline mt-4 mb-2">
                   <span className="text-lg text-gray-500">$</span>
-                  <span className="text-4xl font-extrabold text-purple-700">199</span>
+                  <span className="text-4xl font-extrabold text-purple-700">9999</span>
                   <span className="ml-1 text-xl text-gray-500">/month</span>
                 </div>
             
@@ -151,7 +222,7 @@ const SocialMediaPackagePage = () => {
             <p className="mb-4 text-gray-600">Complete social media management with advanced strategies.</p>
             <div className="flex items-baseline mt-4 mb-2">
                   <span className="text-lg text-gray-500">$</span>
-                  <span className="text-4xl font-extrabold text-purple-700">299</span>
+                  <span className="text-4xl font-extrabold text-purple-700">14999</span>
                   <span className="ml-1 text-xl text-gray-500">/month</span>
                 </div>
             
@@ -258,10 +329,10 @@ const SocialMediaPackagePage = () => {
                   <label className="block mb-1 text-sm font-medium text-gray-700">Monthly Budget (Optional)</label>
                   <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
                     <option value="">Select budget range</option>
-                    <option value="below500">Below $500</option>
-                    <option value="500-1000">$500 - $1,000</option>
-                    <option value="1000-2000">$1,000 - $2,000</option>
-                    <option value="above2000">Above $2,000</option>
+                    <option value="below500">Below $5,000</option>
+                    <option value="500-1000">$5,000 - $10,000</option>
+                    <option value="1000-2000">$10,000 - $20,000</option>
+                    <option value="above2000">Above $20,000</option>
                   </select>
                 </div>
               </div>

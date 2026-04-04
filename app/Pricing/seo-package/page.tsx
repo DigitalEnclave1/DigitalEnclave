@@ -34,7 +34,7 @@ function Pricing() {
                 <h2 className="text-2xl font-bold text-purple-800">Standard</h2>
                 <div className="flex items-baseline mt-4 mb-2">
                   <span className="text-lg text-gray-500">$</span>
-                  <span className="text-4xl font-extrabold text-purple-700">199</span>
+                  <span className="text-4xl font-extrabold text-purple-700">4999</span>
                   <span className="ml-1 text-xl text-gray-500">/month</span>
                 </div>
                 <p className="text-sm text-gray-600">Preferred For Small Businesses</p>
@@ -154,7 +154,7 @@ function Pricing() {
                 </h2>
                 <div className="flex items-baseline mt-4 mb-3">
                   <span className="text-lg text-gray-500">$</span>
-                  <span className="text-4xl font-extrabold text-purple-700">399</span>
+                  <span className="text-4xl font-extrabold text-purple-700">9999</span>
                   <span className="ml-1 text-xl text-gray-500">/month</span>
                 </div>
                 <p className="text-sm text-gray-600">
@@ -267,7 +267,7 @@ function Pricing() {
                 </h2>
                 <div className="flex items-baseline mt-4 mb-2">
                   <span className="text-lg text-gray-500">$</span>
-                  <span className="text-4xl font-extrabold text-purple-700">799</span>
+                  <span className="text-4xl font-extrabold text-purple-700">19999</span>
                   <span className="ml-1 text-xl text-gray-500">/month</span>
                 </div>
                 <p className="text-sm text-gray-600">
