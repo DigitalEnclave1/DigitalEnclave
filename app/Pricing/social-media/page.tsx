@@ -49,10 +49,21 @@ const SocialMediaPackagePage = () => {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    const cleanedValue = name === 'phone' ? value.replace(/\D/g, '').slice(0, 12) : value;
+
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]: cleanedValue,
     }));
+  };
+
+  const formatPhoneNumber = (phone: string) => {
+    const digits = phone.replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.length <= 4) return digits;
+    if (digits.length <= 7) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    if (digits.length <= 10) return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+    return `+${digits.slice(0, digits.length - 10)} ${digits.slice(-10, -7)} ${digits.slice(-7, -4)} ${digits.slice(-4)}`;
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -61,6 +72,16 @@ const SocialMediaPackagePage = () => {
     // Validate required fields
     if (!formData.businessName || !formData.email || !formData.phone) {
       toast.error('Please fill all required fields');
+      return;
+    }
+
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length > 12) {
+      toast.error('Phone number must be 12 digits or less');
+      return;
+    }
+    if (phoneDigits.length < 7) {
+      toast.error('Enter a valid phone number');
       return;
     }
 
@@ -76,7 +97,7 @@ const SocialMediaPackagePage = () => {
         body: JSON.stringify({
           fullName: formData.businessName,
           email: formData.email,
-          phone: formData.phone,
+          phone: formatPhoneNumber(formData.phone),
           subject: `Social Media Package Inquiry - ${formData.businessCategory || 'General'}`,
           message: `Business Name: ${formData.businessName}\n\nPlatforms of Interest: ${formData.platformsOfInterest || 'Not specified'}\n\nMonthly Budget: ${formData.monthlyBudget || 'Not specified'}\n\nAdditional Requirements:\n${formData.additionalRequirements || 'None'}`,
         }),
@@ -136,6 +157,7 @@ const SocialMediaPackagePage = () => {
   return (
     <>
       <div className="px-6 pt-24 pb-12 mx-auto max-w-7xl  bg-white border-2 border-purple-200">
+        <Toaster position="top-right" />
       <div className="mb-16 text-center">
           <span className="inline-block px-3 py-1 mt-2 mb-4 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">
             Subscription Plans
@@ -264,12 +286,15 @@ const SocialMediaPackagePage = () => {
           </div>
           
           <div className="max-w-4xl p-8 mx-auto bg-white rounded-lg shadow-md">
-            <form className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <form className="grid grid-cols-1 gap-6 md:grid-cols-2" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">Business Name *</label>
                   <input  
                     type="text" 
+                    name="businessName"
+                    value={formData.businessName}
+                    onChange={handleChange}
                     placeholder="Your business name" 
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
                     required
@@ -280,6 +305,9 @@ const SocialMediaPackagePage = () => {
                   <label className="block mb-1 text-sm font-medium text-gray-700">Email Address *</label>
                   <input 
                     type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     placeholder="your@email.com" 
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
                     required
@@ -288,7 +316,11 @@ const SocialMediaPackagePage = () => {
                 
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">Business Category</label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
+                  <select 
+                    name="businessCategory"
+                    value={formData.businessCategory}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
                     <option value="">Select your industry</option>
                     <option value="retail">Retail</option>
                     <option value="healthcare">Healthcare</option>
@@ -305,7 +337,12 @@ const SocialMediaPackagePage = () => {
                   <label className="block mb-1 text-sm font-medium text-gray-700">Phone Number *</label>
                   <input 
                     type="tel" 
-                    placeholder="Your phone number" 
+                    inputMode="numeric"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="Enter up to 12 digits"
+                    maxLength={12}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
                     required
                   />
@@ -313,7 +350,11 @@ const SocialMediaPackagePage = () => {
                 
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">Platforms of Interest</label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
+                  <select 
+                    name="platformsOfInterest"
+                    value={formData.platformsOfInterest}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
                     <option value="">Select platforms</option>
                     <option value="facebook">Facebook</option>
                     <option value="instagram">Instagram</option>
@@ -327,7 +368,11 @@ const SocialMediaPackagePage = () => {
                 
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">Monthly Budget (Optional)</label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
+                  <select 
+                    name="monthlyBudget"
+                    value={formData.monthlyBudget}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
                     <option value="">Select budget range</option>
                     <option value="below500">Below $5,000</option>
                     <option value="500-1000">$5,000 - $10,000</option>
@@ -340,6 +385,9 @@ const SocialMediaPackagePage = () => {
               <div className="md:col-span-2">
                 <label className="block mb-1 text-sm font-medium text-gray-700">Additional Requirements</label>
                 <textarea 
+                  name="additionalRequirements"
+                  value={formData.additionalRequirements}
+                  onChange={handleChange}
                   rows={4} 
                   placeholder="Tell us more about your social media marketing needs" 
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
@@ -349,9 +397,10 @@ const SocialMediaPackagePage = () => {
               <div className="text-center md:col-span-2">
                 <button 
                   type="submit" 
-                  className="px-8 py-3 text-white transition-all duration-300 bg-purple-600 rounded-full hover:shadow-lg hover:bg-purple-700"
+                  disabled={isSubmitting}
+                  className="px-8 py-3 text-white transition-all duration-300 bg-purple-600 rounded-full hover:shadow-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Request Custom Quote
+                  {isSubmitting ? 'Sending...' : 'Request Custom Quote'}
                 </button>
               </div>
             </form>

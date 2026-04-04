@@ -20,8 +20,16 @@ console.log("PORT:", process.env.EMAIL_PORT);
       );
     }
 
-   const transporter = nodemailer.createTransport({
-      service: "gmail",
+    const transportOptions = process.env.EMAIL_SERVICE
+      ? { service: process.env.EMAIL_SERVICE }
+      : {
+          host: process.env.EMAIL_HOST,
+          port: process.env.EMAIL_PORT ? Number(process.env.EMAIL_PORT) : 465,
+          secure: process.env.EMAIL_SECURE === 'true' || process.env.EMAIL_PORT === '465',
+        };
+
+    const transporter = nodemailer.createTransport({
+      ...transportOptions,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -29,134 +37,147 @@ console.log("PORT:", process.env.EMAIL_PORT);
     });
 
     const mailOptions = {
-      from: `"DigitalEnclave Services" <${process.env.EMAIL_USER}>`, // ✅ FIX
-      to: process.env.EMAIL_TO,
-      replyTo: email, // ✅ ADD (important)
-      subject: `New Contact Form Submission: ${subject}`,
+      from: `"DigitalEnclave Services" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_TO || process.env.EMAIL_USER,
+      replyTo: email,
+      subject: `New Social Media Package Inquiry: ${subject}`,
+      text: `Name: ${fullName}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nSubject: ${subject}\n\n${message}`,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
             body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333333;
-              max-width: 600px;
+              margin: 0;
+              padding: 0;
+              background-color: #f4f6fb;
+            }
+            table {
+              border-collapse: collapse;
+            }
+            .wrapper {
+              width: 100%;
+              max-width: 680px;
               margin: 0 auto;
-            }
-            .email-container {
-              border: 1px solid #e0e0e0;
-              border-radius: 8px;
-              overflow: hidden;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .email-header {
-              background-color: #4a6fa5;
-              color: white;
               padding: 20px;
-              text-align: center;
             }
-            .email-header h2 {
+            .content {
+              background-color: #ffffff;
+              border: 1px solid #d7dae0;
+              border-radius: 12px;
+              overflow: hidden;
+            }
+            .header {
+              background-color: #5b3df5;
+              color: #ffffff;
+              padding: 28px 24px;
+              text-align: center;
+              font-family: Arial, sans-serif;
+            }
+            .header h1 {
               margin: 0;
               font-size: 24px;
+              letter-spacing: 0.3px;
             }
-            .email-body {
-              padding: 20px;
-              background-color: #ffffff;
+            .body {
+              padding: 24px;
+              font-family: Arial, sans-serif;
+              color: #334155;
             }
-            .email-field {
-              margin-bottom: 15px;
-              padding-bottom: 15px;
-              border-bottom: 1px solid #eeeeee;
+            .section-title {
+              margin: 0 0 12px 0;
+              font-size: 16px;
+              font-weight: 700;
+              color: #1f2937;
             }
-            .email-field strong {
-              color: #4a6fa5;
+            .detail-table {
+              width: 100%;
+              margin-bottom: 22px;
             }
-            .message-content {
-              background-color: #f9f9f9;
-              padding: 15px;
-              border-radius: 5px;
-              margin-top: 5px;
-              border-left: 4px solid #4a6fa5;
+            .detail-table td {
+              padding: 8px 0;
+              vertical-align: top;
+              font-size: 15px;
+              line-height: 1.6;
             }
-            .email-footer {
-              background-color: #f5f5f5;
-              padding: 20px;
-              color: #777777;
-              border-top: 1px solid #e0e0e0;
+            .detail-label {
+              width: 140px;
+              font-weight: 700;
+              color: #4338ca;
             }
-            .footer-details {
-              margin-bottom: 15px;
+            .detail-value {
+              color: #334155;
             }
-            .footer-contact {
-              margin-bottom: 15px;
+            .message-box {
+              background-color: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 10px;
+              padding: 16px;
+              color: #475569;
+              font-size: 15px;
+              line-height: 1.7;
+              white-space: pre-wrap;
             }
-            .footer-social {
-              margin-top: 15px;
+            .footer {
+              padding: 20px 24px 24px;
+              font-family: Arial, sans-serif;
+              font-size: 13px;
+              color: #64748b;
+              line-height: 1.6;
             }
-            .footer-social a {
-              display: inline-block;
-              margin: 0 10px;
-              color: #4a6fa5;
-              text-decoration: none;
-            }
-            .footer-copyright {
-              margin-top: 15px;
-              font-size: 12px;
-              text-align: center;
-              color: #999999;
+            .footer strong {
+              color: #1f2937;
             }
           </style>
         </head>
         <body>
-          <div class="email-container">
-            <div class="email-header">
-              <h2>New Contact Form Submission</h2>
-            </div>
-            <div class="email-body">
-              <div class="email-field">
-                <strong>Name:</strong> ${fullName}
-              </div>
-              <div class="email-field">
-                <strong>Email:</strong> ${email}
-              </div>
-              <div class="email-field">
-                <strong>Phone:</strong> ${phone || 'Not provided'}
-              </div>
-              <div class="email-field">
-                <strong>Subject:</strong> ${subject}
-              </div>
-              <div class="email-field">
-                <strong>Message:</strong>
-                <div class="message-content">
-                  ${message.replace(/\n/g, '<br>')}
-                </div>
-              </div>
-            </div>
-            <div class="email-footer">
-              <div class="footer-details">
-                <strong>Submission Details</strong><br>
-                Date: ${new Date().toLocaleString()}<br>
-                Form: Contact Form
-              </div>
-              <div class="footer-contact">
-                <strong>Contact Us</strong><br>
-                Email: support@DigitalEnclave.com<br>
-                Phone: (555) 123-4567<br>
-                Hours: Monday-Friday, 9 AM - 5 PM EST
-              </div>
-              <div class="footer-social">
-                <a href="https://facebook.com/yourcompany">Facebook</a> |
-                <a href="https://twitter.com/yourcompany">Twitter</a> |
-                <a href="https://linkedin.com/company/yourcompany">LinkedIn</a>
-              </div>
-              <div class="footer-copyright">
-                &copy; ${new Date().getFullYear()} Your Company Name. All rights reserved.<br>
-                This email was automatically generated. Please do not reply directly to this message.
-              </div>
-            </div>
-          </div>
+          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+            <tr>
+              <td>
+                <table class="wrapper" cellpadding="0" cellspacing="0" role="presentation">
+                  <tr>
+                    <td class="content">
+                      <div class="header">
+                        <h1>New Social Media Package Inquiry</h1>
+                      </div>
+                      <div class="body">
+                        <p class="section-title">Inquiry Details</p>
+                        <table class="detail-table" cellpadding="0" cellspacing="0" role="presentation">
+                          <tr>
+                            <td class="detail-label">Name:</td>
+                            <td class="detail-value">${fullName}</td>
+                          </tr>
+                          <tr>
+                            <td class="detail-label">Email:</td>
+                            <td class="detail-value">${email}</td>
+                          </tr>
+                          <tr>
+                            <td class="detail-label">Phone:</td>
+                            <td class="detail-value">${phone || 'Not provided'}</td>
+                          </tr>
+                          <tr>
+                            <td class="detail-label">Subject:</td>
+                            <td class="detail-value">${subject}</td>
+                          </tr>
+                        </table>
+
+                        <p class="section-title">Message</p>
+                        <div class="message-box">${message.replace(/(?:\r\n|\r|\n)/g, '<br>')}</div>
+                      </div>
+                      <div class="footer">
+                        <p><strong>Submission Details</strong></p>
+                        <p>Date: ${new Date().toLocaleString()}</p>
+                        <p>Form: Social Media Package Inquiry</p>
+                        <p>This email was automatically generated. Do not reply directly to this message.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
         </body>
         </html>
       `,
